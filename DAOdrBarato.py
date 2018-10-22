@@ -1,4 +1,6 @@
 import mysql.connector
+from Classes import *
+import json
 
 
 db = mysql.connector.connect( 
@@ -18,14 +20,15 @@ def atualizaDoutor(dr_id,nome):
         return e
 		
 
-def getDoutor(dr_id):
+def getDoutor(dr_id): 
     try:
-		cmd = "SELECT * FROM MEDICO WHERE ID_medico = "+dr_id
+        cmd = "SELECT * FROM MEDICO WHERE ID_medico = "+dr_id
 		cursor.execute(cmd)
 		result = cursor.fetchone()
-		return result
-	except (MySQLdb.Error, MySQLdb.Warning) as e:
-		return e
+		med = medico(result["id_usario"],result["formacao"],result["anos_experincia"],result["bio"])
+        return json.loads(med) #BD>Python Object>JSON
+    except (MySQLdb.Error, MySQLdb.Warning) as e:
+        return e
 
 def postDoutor(jss):
     return "null"
