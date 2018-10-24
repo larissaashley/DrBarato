@@ -1,8 +1,98 @@
 from flask import Flask, jsonify, request
 from DAOdrBarato import atualizaDoutor, getDoutor, postDoutor, postHorario, getHorario
-
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+db = SQLAlchemy(app)
+
+#______________________________________Classes para o BD _________________________
+
+class Usuario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
+    nascimento = db.Column(db.Date, nullable=False)
+    user = db.relationship('Medico', backref='id', lazy=True)#Verificar relação
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+
+class Medico(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    formacao = db.Column(db.String(50), unique=True, nullable=False)
+    anos_exp = db.Column(db.String(120), unique=True, nullable=False)
+    bio = db.Column(db.String(20), nullable=False, default='default.jpg')
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+#_____________daqui para baixo tem que para cada tabela colocar o nome certo das colunas
+class Especialidade(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
+    nascimento = db.Column(db.Date, nullable=False)
+    #posts = db.relationship('Post', backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+
+
+class documento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
+    nascimento = db.Column(db.Date, nullable=False)
+    #posts = db.relationship('Post', backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+
+class lugar(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
+    nascimento = db.Column(db.Date, nullable=False)
+    #posts = db.relationship('Post', backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+
+class Agendamento(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
+    nascimento = db.Column(db.Date, nullable=False)
+    #posts = db.relationship('Post', backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+
+class especialidade_medico(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
+    nascimento = db.Column(db.Date, nullable=False)
+    #posts = db.relationship('Post', backref='author', lazy=True)
+
+    def __repr__(self):
+        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+
+#__________________________________Rotas_________________________
+
+
 
 @app.route("/rest/user/<int:dr_id>", methods=['GET', 'POST'])		 	#define rota e quais são os métodos disponiveis GET e/ou POST
 def dr(dr_id):
@@ -31,6 +121,12 @@ def agendamento(dr_id):
 		return jsonify(postHorario(jss, dr_id))
     else: 
         return jsonify(getHorario(jss, dr_id))
-        
+
+@app.route("/rest/doutores", methods=['POST'])
+def getDoctos():
+    jss = request.get_json()
+    
+
+
 if __name__ == '__main__':
     app.run(debug=True)
