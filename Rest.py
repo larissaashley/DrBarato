@@ -1,5 +1,5 @@
 from flask import Flask, jsonify, request
-from DAOdrBarato import atualizaDoutor, getDoutor, postDoutor, postHorario, getHorario
+import DAOdrBarato
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
@@ -15,13 +15,22 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha = db.Column(db.String(20), nullable=False, default='default.jpg')
     nascimento = db.Column(db.Date, nullable=False)
-    especialidades = db.relationship('Usuarios', secondary=especialidade_medico, backref=db.backref('medicos')# Essa linha representa um relacionamento e não uma coluna explicação em https://www.youtube.com/watch?v=OvhoYbjtiKc
-    #ainda imcompleto
-
-    def __repr__(self): # oq vai imprimir quando chamar a classe
-        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+    especialidades = db.relationship('Especialidade', secondary=especialidade_medico, backref=db.backref('espec_med', lazy='dynamic'))# Essa linha representa um relacionamento e não uma coluna explicação em https://www.youtube.com/watch?v=OvhoYbjtiKc
+    lugares = db.relationship('Lugar', backref=db.backref('lugs')
 
 
+class Especialidade(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    especialidade = db.Column(db.String(50), nullable=False)
+    medicos = db.relationship('Usuario', secondary=especialidade_medico, backref=db.backref('medicos_spec', lazy='dynamic'))
+
+
+class especialidade_medico(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    id_especialidade = db.Column(db.Interger, db.ForeignKey('especialidade.id') )
+    id_medico = db.Column(db.Integer, db.ForeignKey('usuario.id'))
+
+    
 class Medico(db.Model):
     id = db.Column(db.Integer,db.ForeignKey('usuario.id'), primary_key=True)
     formacao = db.Column(db.String(50), unique=True, nullable=False)
@@ -29,59 +38,34 @@ class Medico(db.Model):
     bio = db.Column(db.String(20), nullable=False, default='default.jpg')
     
 
-    def __repr__(self):
-        return f"Usuario('{self.tipo_id}', '{self.formacao}', '{self.anos_exp}','{self.bio}')"
-
-class Especialidade(db.Model):
+class Documento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    especialidade = db.Column(db.String(50, nullable=False)
-    
-    def __repr__(self):
-        return f"Usuario('{self.especialidade}')"
+    documento = db.Column(db.String(50), nullable = False)
+    tipo_doc = db.Column(db.String(20), nullable = False)
+    id_usario = db.Column(db.Integer, db.ForeignKey('usuario.id'))
 
-class especialidade_medico(db.Model):
+
+
+class Lugar(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    id_espec = 
-
-    def __repr__(self):
-        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+    id_usuario = db.Column(db.Interger, db.ForeignKey('usuario.id'))
+    estado = db.Column(db.String(2), nullable=False)
+    cidade = db.Column(db.String(100), nullable=False)
+    logradouro = db.Column(db.String(250))
+    bairro = db.Column(db.String(250))
+    complemento = db.Column(db.String(250))
+    CEP = db.Column(db.String(250))	
 
 #_____________daqui para baixo tem que para cada tabela colocar o nome certo das colunas
 
-class documento(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
-    nascimento = db.Column(db.Date, nullable=False)
-    #posts = db.relationship('Post', backref='author', lazy=True)
 
-    def __repr__(self):
-        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
-
-
-class lugar(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
-    nascimento = db.Column(db.Date, nullable=False)
-    #posts = db.relationship('Post', backref='author', lazy=True)
-
-    def __repr__(self):
-        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
 
 
 class Agendamento(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    tipo_id = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha = db.Column(db.String(20), nullable=False, default='default.jpg')
-    nascimento = db.Column(db.Date, nullable=False)
-    #posts = db.relationship('Post', backref='author', lazy=True)
+    id_medico = 
 
-    def __repr__(self):
-        return f"Usuario('{self.tipo_id}', '{self.email}', '{self.senha}','{self.nascimento}')"
+    
 
 
 
