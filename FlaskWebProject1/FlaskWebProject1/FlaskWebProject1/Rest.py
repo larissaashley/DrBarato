@@ -1,10 +1,12 @@
 from flask import Flask, jsonify, request
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy, Integer, String, Date, DateTime, Float
+from flaks_marshmallow import Marshmallow
 
 app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 
 #______________________________________Classes para o BD _________________________
 
@@ -68,35 +70,34 @@ class Agendamento(db.Model):
     in_status = db.Column(db.Integer, nullable=False)
     valor = db.Column(db.Float)
 
+    #________________Configuração de schemas para o Marshmallow____
+
+class Usuario_Schema(ma.Model):
+    class Meta:
+        model = Usuario
+
+class Especialidade_Schema(ma.Model):
+    class Meta:
+        model = Especialidade
+
+class Medico_Schema(ma.Model):
+    class Meta:
+        model = Medico
+
+class Documento_Schema(ma.Model):
+    class Meta:
+        mode1 = Documento
+
+class Lugar_Schema(ma.Model):
+    class Meta:
+        mode1 = Lugar
+
+class Agendamento_Schema(ma.Model):
+    class Meta:
+        mode1 = Agendamento
 
 #__________________________________Rotas_________________________
 
-@app.route("/rest/user/<int:dr_id>", methods=['GET', 'POST'])		 	#define rota e quais são os métodos disponiveis GET e/ou POST
-def dr(dr_id):
-    if (request.method == 'POST'): 										#POST atualiza dados do DR
-        jss = request.get_json() 
-        data = json.loads(jss) 											#transferencia do JSON para objeto python
-        return jsonify(atualizaDoutor(data["nome"],data["ID_medico"])) 	#passa valores para metodo DAO que conectara com banco de dados. Resposta convertera para JSON e retornara
-    else:
-        return jsonify(getDoutor(dr_id))
-
-@app.route("/rest/user", methods=['POST'])
-def newUser():
-    jss = request.get_json()
-    data = json.loads(jss)
-    return jsonify(postDoutor(data["ID_usuario"], data["nome"], 		#tem que retornar o ID do user criado
-								data["dt_nascimento"], data["telefone"], 
-								data["ID_documento"],data["documento"],
-								data["tipo_doc"]))
-	
-@app.route("/rest/agendamento/<int:dr_id>", methods=['GET', 'POST'])
-def agendamento(dr_id):
-    if(request.method == 'POST'):
-        jss = request.get_json()
-        data = json.loads(jss)
-        return jsonify(postHorario(jss, dr_id))
-    else: 
-        return jsonify(getHorario(jss, dr_id))
 
 @app.route("/rest/doutor", methods=['POST'])
 def getDoctos():
@@ -105,8 +106,23 @@ def getDoctos():
     
     #https://www.pythoncentral.io/sqlalchemy-orm-examples/
     query = db.session.query(Usuario).join(Lugar.id_usuario).filter(Lugar.estado == obj['state'], Lugar.cidade == obj['city'],Usuario.especialidades.any(especialidade.id_especialidade == obj['id']))
+    user_schema = Usuario_Schema(many=True) #many= True para quando vai tazer varios dados quando for um só não precisa
+    output = user_schema.dump(query).data #https://www.youtube.com/watch?v=kRNXKzfYrPU usar esse para passar do query pro JSON
 
-    #https://www.youtube.com/watch?v=kRNXKzfYrPU usar esse para passar do query pro JSON
+    return jsonify(json.dump(output)) #json.dump() passa um objeto para string JSON
 
 if __name__ == '__main__':
     app.run(debug=True)
+
+	
+@app.route("/rest/agendamento/<int:dr_id>", methods=['GET', 'POST'])
+def agendamento(dr_id):
+    if(request.method == 'POST'):
+        jss = request.get_json()
+        data = json.loads(jss)
+        return jsonify(postHorario(jss, dr_id))
+    else: 
+        usr = Usuario.query.get(dr_id)
+        user_schema = Usuario_Schema()
+        output = user_schema.dump(query).data
+        return jsonify(json.dump(output))
