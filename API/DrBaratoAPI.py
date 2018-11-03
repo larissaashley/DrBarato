@@ -14,6 +14,15 @@ def medico():
 	jss = request.get_json()
 	return DAO.getMedico(jss["id_usuario"])
 
+#EM CONSTRUÇÃO: Possíveis erros de datetime
+@app.route('/schedule', methods=['POST','GET'])
+def agendamento():
+	if (request.method == 'POST'): 										
+		jss = request.get_json()
+		return DAO.createAgendamento(jss["id_medico"],jss["inicio"],jss["fim"])
+	else:
+		return DAO.getAgendamento(jss["id_agendamento"])
+
 if __name__ == '__main__':
 	app.run()
 
